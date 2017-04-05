@@ -4,71 +4,77 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 
 
+-- project
+
+import Calculator exposing (Stack)
+
+
 main : Html a
 main =
     let
-        ex =
-            "5 1 2 + 4 * + 3 -" |> String.words |> List.foldl (Result.andThen << updateStack) (Ok [])
+        results =
+            "5 1 2 + 4 * + 3 -"
+                |> String.words
+                |> tracel
+                    (Result.andThen << Calculator.update)
+                    (Ok [])
     in
-        Html.text (toString ex)
+        viewResults results
 
 
-type alias Stack =
-    List Float
+viewResults : ( List ( Result String Stack, String ), Result String Stack ) -> Html a
+viewResults ( log, result ) =
+    let
+        items =
+            log
+                |> List.filterMap (\( r, s ) -> r |> Result.map ((,) s) |> Result.toMaybe)
+                |> List.map (uncurry viewItem)
+    in
+        Html.ol
+            []
+            (items
+                ++ [ Html.li [] [ result |> unpack viewError viewStack ] ]
+            )
 
 
-type alias Operator =
-    Float -> Float -> Float
-
-
-type Token
-    = Op Operator
-    | Val Float
-
-
-operators : Dict String Operator
-operators =
-    Dict.fromList
-        [ ( "+", (+) )
-        , ( "-", (-) )
-        , ( "*", (*) )
-        , ( "/", (/) )
+viewItem : String -> Stack -> Html a
+viewItem s stack =
+    Html.li
+        []
+        [ viewStack stack
+        , Html.text " "
+        , Html.span [] [ Html.text s ]
         ]
 
 
-toToken : String -> Maybe Token
-toToken s =
-    (s |> String.toFloat |> Result.toMaybe |> Maybe.map Val)
-        |> orElse (Dict.get s operators |> Maybe.map Op)
+viewStack : Stack -> Html a
+viewStack stack =
+    Html.span [] [ Html.text ("[ " ++ (stack |> List.reverse |> List.map toString |> String.join ", ") ++ " ]") ]
 
 
-updateStack : String -> Stack -> Result String Stack
-updateStack s stack =
-    case toToken s of
-        Just (Val x) ->
-            Ok (x :: stack)
-
-        Just (Op op) ->
-            case stack of
-                x :: y :: rest ->
-                    Ok (op y x :: rest)
-
-                _ ->
-                    Err ("Insufficient values in stack to perform (" ++ s ++ ")")
-
-        Nothing ->
-            Err ("Invalid input: " ++ s)
+viewError : String -> Html a
+viewError message =
+    Html.span [] [ Html.text message ]
 
 
 
 -- helpers
 
 
-orElse : Maybe a -> Maybe a -> Maybe a
-orElse mb ma =
-    case ma of
-        Just _ ->
-            ma
+tracel : (a -> r -> r) -> r -> List a -> ( List ( r, a ), r )
+tracel f r0 =
+    List.foldl
+        (\x ( rs, r ) ->
+            ( rs ++ [ ( r, x ) ], f x r )
+        )
+        ( [], r0 )
 
-        _ ->
-            mb
+
+unpack : (x -> b) -> (a -> b) -> Result x a -> b
+unpack mapErr mapOk result =
+    case result of
+        Ok a ->
+            mapOk a
+
+        Err x ->
+            mapErr x
