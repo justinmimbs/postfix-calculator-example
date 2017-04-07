@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Dict exposing (Dict)
 import Html exposing (Html)
+import Html.Attributes
 
 
 -- project
@@ -13,16 +14,24 @@ main : Html a
 main =
     let
         results =
-            "5 1 2 + 4 * + 3 -"
+            "5 1 2 + 4 * + 3 - *"
                 |> String.words
                 |> tracel
                     (Result.andThen << Calculator.update)
                     (Ok [])
     in
-        viewResults results
+        Html.div
+            []
+            [ Html.node "style" [] [ Html.text "@import url(./style.css);" ]
+            , viewResults results
+            ]
 
 
-viewResults : ( List ( Result String Stack, String ), Result String Stack ) -> Html a
+type alias CalcResult =
+    Result String Stack
+
+
+viewResults : ( List ( CalcResult, String ), CalcResult ) -> Html a
 viewResults ( log, result ) =
     let
         items =
@@ -43,18 +52,27 @@ viewItem s stack =
         []
         [ viewStack stack
         , Html.text " "
-        , Html.span [] [ Html.text s ]
+        , Html.span [ Html.Attributes.class "next" ] [ Html.text s ]
         ]
 
 
 viewStack : Stack -> Html a
 viewStack stack =
-    Html.span [] [ Html.text ("[ " ++ (stack |> List.reverse |> List.map toString |> String.join ", ") ++ " ]") ]
+    let
+        numbers =
+            stack |> List.reverse |> List.map (toString >> Html.text >> List.singleton >> Html.span [])
+    in
+        Html.span
+            [ Html.Attributes.class "stack" ]
+            ([ Html.text "[ " ]
+                ++ (numbers |> List.intersperse (Html.text ", "))
+                ++ [ Html.text " ]" ]
+            )
 
 
 viewError : String -> Html a
 viewError message =
-    Html.span [] [ Html.text message ]
+    Html.span [ Html.Attributes.class "error" ] [ Html.text message ]
 
 
 

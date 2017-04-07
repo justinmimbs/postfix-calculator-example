@@ -1,0 +1,10 @@
+html { font-size: 20px; font-family: Fira Code, Menlo, Monaco, monospace; }
+body { margin: 2em; }
+ol { margin: 0; padding: 0; list-style: none; }
+li { line-height: 1em; margin: 0.5em 0; }
+
+li > span { display: inline-block; height: 1em; padding: 0.25em; border-radius: 0.25em; vertical-align: top; }
+.stack { color: rgb(170, 192, 206); background-color: rgba(105, 180, 255, 0.15); }
+.stack span { color: rgb(0, 125, 255); }
+.next { color: black;  background-color: rgba(160, 160, 160, 0.15); }
+.error { color: rgb(240, 0, 80); background-color: rgba(240, 0, 80, 0.05); }
