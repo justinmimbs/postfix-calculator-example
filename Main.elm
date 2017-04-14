@@ -3,6 +3,7 @@ module Main exposing (main)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
+import Html.Events
 
 
 -- project
@@ -10,19 +11,34 @@ import Html.Attributes
 import Calculator exposing (Stack)
 
 
-main : Html a
+main : Program Never String String
 main =
+    Html.beginnerProgram
+        { model = ""
+        , update = \s _ -> s
+        , view = view
+        }
+
+
+view : String -> Html String
+view string =
     let
         results =
-            "5 1 2 + 4 * + 3 - *"
+            string
                 |> String.words
+                |> List.filter ((/=) "")
                 |> tracel
-                    (Result.andThen << Calculator.update)
+                    (Calculator.update >> Result.andThen)
                     (Ok [])
     in
         Html.div
             []
             [ Html.node "style" [] [ Html.text "@import url(./style.css);" ]
+            , Html.input
+                [ Html.Attributes.value string
+                , Html.Events.onInput identity
+                ]
+                []
             , viewResults results
             ]
 
@@ -39,11 +55,11 @@ viewResults ( log, result ) =
                 |> List.filterMap (\( r, s ) -> r |> Result.map ((,) s) |> Result.toMaybe)
                 |> List.map (uncurry viewItem)
     in
-        Html.ol
+        Html.div
             []
-            (items
-                ++ [ Html.li [] [ result |> unpack viewError viewStack ] ]
-            )
+            [ Html.ol [] items
+            , result |> unpack viewError viewStack
+            ]
 
 
 viewItem : String -> Stack -> Html a

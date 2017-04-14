@@ -15,11 +15,6 @@ type alias Operator =
     Float -> Float -> Float
 
 
-type Token
-    = Op Operator
-    | Val Float
-
-
 operators : Dict String Operator
 operators =
     Dict.fromList
@@ -30,10 +25,62 @@ operators =
         ]
 
 
+type Token
+    = Val Float
+    | Op Operator
+
+
+
+-- 1
+
+
+toToken1 : String -> Maybe Token
+toToken1 s =
+    case String.toFloat s of
+        Ok n ->
+            Just (Val n)
+
+        Err _ ->
+            case Dict.get s operators of
+                Just op ->
+                    Just (Op op)
+
+                Nothing ->
+                    Nothing
+
+
+
+-- 2
+
+
+toToken2 : String -> Maybe Token
+toToken2 s =
+    or
+        (Maybe.map Val (String.toFloat s |> Result.toMaybe))
+        (Maybe.map Op (Dict.get s operators))
+
+
+
+--3
+
+
 toToken : String -> Maybe Token
 toToken s =
-    (s |> String.toFloat |> Result.toMaybe |> Maybe.map Val)
-        |> orElse (Dict.get s operators |> Maybe.map Op)
+    Val <$> toValue s <|> Op <$> toOperator s
+
+
+toValue : String -> Maybe Float
+toValue =
+    String.toFloat >> Result.toMaybe
+
+
+toOperator : String -> Maybe Operator
+toOperator =
+    (flip Dict.get) operators
+
+
+
+-- update
 
 
 update : String -> Stack -> Result String Stack
@@ -58,11 +105,23 @@ update s stack =
 -- helpers
 
 
-orElse : Maybe a -> Maybe a -> Maybe a
-orElse mb ma =
+or : Maybe a -> Maybe a -> Maybe a
+or ma mb =
     case ma of
         Just _ ->
             ma
 
         _ ->
             mb
+
+
+infixl 3 <$>
+(<$>) : (a -> b) -> Maybe a -> Maybe b
+(<$>) =
+    Maybe.map
+
+
+infixl 1 <|>
+(<|>) : Maybe a -> Maybe a -> Maybe a
+(<|>) =
+    or
