@@ -15,14 +15,19 @@ main : Program Never String String
 main =
     Html.beginnerProgram
         { model = ""
-        , update = \s _ -> s
+        , update = always
         , view = view
         }
+
+
+type alias CalcResult =
+    Result String Stack
 
 
 view : String -> Html String
 view string =
     let
+        results : ( List ( CalcResult, String ), CalcResult )
         results =
             string
                 |> String.words
@@ -43,13 +48,10 @@ view string =
             ]
 
 
-type alias CalcResult =
-    Result String Stack
-
-
 viewResults : ( List ( CalcResult, String ), CalcResult ) -> Html a
 viewResults ( log, result ) =
     let
+        items : List (Html a)
         items =
             log
                 |> List.filterMap (\( r, s ) -> r |> Result.map ((,) s) |> Result.toMaybe)
@@ -76,7 +78,7 @@ viewStack : Stack -> Html a
 viewStack stack =
     let
         numbers =
-            stack |> List.reverse |> List.map (toString >> Html.text >> List.singleton >> Html.span [])
+            stack |> List.reverse |> List.map (\n -> Html.span [] [ Html.text (toString n) ])
     in
         Html.span
             [ Html.Attributes.class "stack" ]

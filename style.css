@@ -3,10 +3,10 @@ body { margin: 2em; }
 ol { margin: 0; padding: 0; list-style: none; }
 li { line-height: 1em; margin: 0.5em 0; }
 
-input { width: 25em; padding: 0.5em 0.25em; margin-bottom: 1.5em; border-radius: 0.25em; font: inherit; border: 0; background-color: rgba(160, 160, 160, 0.15); }
+input { width: 25em; height: 1em; padding: 0.5em 0.25em; margin-bottom: 1em; border-radius: 0.2em; font: inherit; border: 0; background-color: rgba(160, 160, 160, 0.15); }
 input:focus { outline: none; background-color: rgba(160, 160, 160, 0.25); }
 
-.stack, .error, .next { display: inline-block; height: 1em; line-height: 1em; padding: 0.5em 0.25em; border-radius: 0.25em; vertical-align: top; }
+.stack, .error, .next { display: inline-block; height: 1em; line-height: 1em; padding: 0.5em 0.25em; border-radius: 0.2em; vertical-align: top; }
 
 .stack { color: rgb(170, 192, 206); background-color: rgba(105, 180, 255, 0.15); }
 .stack span { color: rgb(0, 125, 255); }
