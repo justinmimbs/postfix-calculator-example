@@ -30,18 +30,28 @@ type Token
     | Op Operator
 
 
+toValue : String -> Maybe Float
+toValue =
+    String.toFloat >> Result.toMaybe
+
+
+toOperator : String -> Maybe Operator
+toOperator =
+    (flip Dict.get) operators
+
+
 
 -- 1
 
 
 toToken1 : String -> Maybe Token
 toToken1 s =
-    case String.toFloat s of
-        Ok n ->
+    case toValue s of
+        Just n ->
             Just (Val n)
 
-        Err _ ->
-            case Dict.get s operators of
+        Nothing ->
+            case toOperator s of
                 Just op ->
                     Just (Op op)
 
@@ -56,27 +66,17 @@ toToken1 s =
 toToken2 : String -> Maybe Token
 toToken2 s =
     or
-        (Maybe.map Val (String.toFloat s |> Result.toMaybe))
-        (Maybe.map Op (Dict.get s operators))
+        (toValue s |> Maybe.map Val)
+        (toOperator s |> Maybe.map Op)
 
 
 
 --3
 
 
-toToken : String -> Maybe Token
-toToken s =
+toToken3 : String -> Maybe Token
+toToken3 s =
     Val <$> toValue s <|> Op <$> toOperator s
-
-
-toValue : String -> Maybe Float
-toValue =
-    String.toFloat >> Result.toMaybe
-
-
-toOperator : String -> Maybe Operator
-toOperator =
-    (flip Dict.get) operators
 
 
 
@@ -85,7 +85,7 @@ toOperator =
 
 update : String -> Stack -> Result String Stack
 update s stack =
-    case toToken s of
+    case toToken3 s of
         Just (Val x) ->
             Ok (x :: stack)
 

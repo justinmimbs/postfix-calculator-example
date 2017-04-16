@@ -1,5 +1,5 @@
 html { font-size: 20px; font-family: Fira Code, Menlo, Monaco, monospace; }
-body { margin: 2em; }
+body { margin: 2em; font: inherit; }
 ol { margin: 0; padding: 0; list-style: none; }
 li { line-height: 1em; margin: 0.5em 0; }
 
